@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>サロンオーナー タイプ診断</title>
+<style>
+/* =====================
+   BASE
+===================== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+font-family: ‘Hiragino Kaku Gothic ProN’, ‘Noto Sans JP’, sans-serif;
+background: #0a0d1a;
+min-height: 100vh;
+color: #eee;
+}
+
+/* =====================
+HERO（フルウィズ・コンテナ外）
+===================== */
+.hero-wrap {
+position: relative;
+width: 100%;
+min-height: 280px;
+overflow: hidden;
+background: linear-gradient(160deg, #141830 0%, #0a0d1a 100%);
+}
+
+/* 背景写真 */
+.hero-bg {
+position: absolute;
+inset: 0;
+width: 100%;
+height: 100%;
+object-fit: cover;
+object-position: center top;
+z-index: 0;
+}
+
+/* 透過PNGイラスト（文字の背後） */
+.hero-illust {
+position: absolute;
+inset: 0;
+width: 100%;
+height: 100%;
+object-fit: cover;
+object-position: center center;
+z-index: 2;
+pointer-events: none;
+}
+
+/* 暗幕グラデーション */
+.hero-overlay {
+position: absolute;
+inset: 0;
+background: linear-gradient(
+to bottom,
+rgba(10,13,26,0.20) 0%,
+rgba(10,13,26,0.40) 55%,
+rgba(10,13,26,0.85) 100%
+);
+z-index: 1;
+}
+
+/* テキスト（最前面） */
+.hero-text {
+position: relative;
+z-index: 3;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+min-height: 280px;
+padding: 40px 20px 36px;
+text-align: center;
+}
+
+.hero-label {
+font-size: 10px;
+font-weight: bold;
+letter-spacing: 4px;
+color: #c0a0e0;
+text-transform: uppercase;
+margin-bottom: 12px;
+}
+
+.hero-h1 {
+font-size: 22px;
+font-weight: bold;
+line-height: 1.65;
+color: #ede0ff;
+-webkit-text-fill-color: #ede0ff;
+text-shadow: 0 2px 20px rgba(80,30,120,0.7);
+margin-bottom: 10px;
+}
+
+.hero-h1 span {
+background: linear-gradient(90deg, #e0427a, #a078e8);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+
+.hero-sub {
+font-size: 12px;
+color: #9090b8;
+line-height: 1.8;
+}
+
+/* =====================
+CONTAINER（設問エリア）
+===================== */
+.container {
+max-width: 640px;
+margin: 0 auto;
+padding: 24px 16px 56px;
+}
+
+/* =====================
+PROGRESS
+===================== */
+.progress-wrap { margin-bottom: 22px; }
+
+.progress-label {
+display: flex;
+justify-content: space-between;
+font-size: 11px;
+color: #555;
+letter-spacing: 1px;
+margin-bottom: 7px;
+}
+
+.progress-bar {
+height: 4px;
+background: #1e1e2e;
+border-radius: 99px;
+overflow: hidden;
+}
+
+.progress-fill {
+height: 100%;
+background: linear-gradient(90deg, #e0427a, #7b5cf0);
+border-radius: 99px;
+transition: width 0.4s ease;
+}
+
+/* =====================
+QUESTION CARD
+===================== */
+.card {
+background: #18181f;
+border: 1px solid #2a2a35;
+border-radius: 20px;
+padding: 26px 20px;
+margin-bottom: 16px;
+}
+
+.q-number {
+font-size: 10px;
+font-weight: bold;
+color: #e0427a;
+letter-spacing: 3px;
+text-transform: uppercase;
+margin-bottom: 10px;
+}
+
+.q-text {
+font-size: 16px;
+font-weight: bold;
+line-height: 1.65;
+color: #f0f0f0;
+margin-bottom: 20px;
+}
+
+.options { display: flex; flex-direction: column; gap: 10px; }
+
+.option-btn {
+background: #111116;
+border: 1.5px solid #2a2a38;
+border-radius: 12px;
+padding: 13px 16px;
+text-align: left;
+font-size: 14px;
+color: #bbb;
+cursor: pointer;
+line-height: 1.55;
+transition: border-color 0.2s, background 0.2s, color 0.2s;
+-webkit-tap-highlight-color: transparent;
+}
+
+.option-btn:hover  { border-color: #7b5cf0; color: #ddd; background: #1a1a24; }
+.option-btn.selected {
+border-color: #e0427a;
+background: linear-gradient(135deg, #1f0f18, #16102a);
+color: #f0c0d0;
+font-weight: bold;
+}
+
+/* =====================
+NAV BUTTONS
+===================== */
+.nav { display: flex; gap: 12px; }
+
+.btn-back {
+background: none;
+border: 1.5px solid #2a2a38;
+border-radius: 12px;
+padding: 12px 18px;
+font-size: 14px;
+color: #555;
+cursor: pointer;
+transition: border-color 0.2s, color 0.2s;
+}
+.btn-back:hover { border-color: #555; color: #888; }
+
+.btn-next {
+flex: 1;
+background: linear-gradient(90deg, #e0427a, #7b5cf0);
+border: none;
+border-radius: 12px;
+padding: 14px 20px;
+font-size: 15px;
+font-weight: bold;
+color: white;
+cursor: pointer;
+opacity: 0.3;
+letter-spacing: 0.5px;
+transition: opacity 0.2s;
+}
+.btn-next.active { opacity: 1; }
+
+/* =====================
+RESULT
+===================== */
+.result-card {
+background: #18181f;
+border: 1px solid #2a2a35;
+border-radius: 20px;
+overflow: hidden;
+margin-bottom: 16px;
+}
+
+.result-img-wrap {
+width: 100%;
+aspect-ratio: 16/9;
+background: linear-gradient(135deg, #1a0f20, #0f1428);
+position: relative;
+overflow: hidden;
+}
+
+.result-img-wrap img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+display: block;
+}
+
+.result-img-placeholder {
+width: 100%;
+height: 100%;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 8px;
+color: #444;
+font-size: 13px;
+}
+.result-img-placeholder .emoji { font-size: 48px; }
+
+.result-img-overlay {
+position: absolute;
+bottom: 0; left: 0; right: 0;
+height: 55%;
+background: linear-gradient(to top, #18181f, transparent);
+}
+
+.result-body { padding: 22px 20px 26px; }
+
+.result-type-label {
+display: inline-block;
+background: linear-gradient(90deg, #e0427a, #7b5cf0);
+color: white;
+font-size: 10px;
+font-weight: bold;
+letter-spacing: 3px;
+padding: 4px 14px;
+border-radius: 20px;
+margin-bottom: 12px;
+text-transform: uppercase;
+}
+
+.result-name {
+font-size: 24px;
+font-weight: bold;
+color: #f0f0f0;
+line-height: 1.3;
+margin-bottom: 6px;
+}
+
+.result-tagline {
+font-size: 13px;
+color: #666;
+letter-spacing: 0.5px;
+margin-bottom: 20px;
+}
+
+.result-desc {
+font-size: 14px;
+line-height: 1.85;
+color: #999;
+background: #111116;
+border: 1px solid #222;
+border-radius: 12px;
+padding: 16px;
+margin-bottom: 18px;
+}
+
+.result-section-title {
+font-size: 10px;
+font-weight: bold;
+color: #7b5cf0;
+letter-spacing: 2px;
+text-transform: uppercase;
+margin-bottom: 10px;
+}
+
+.result-ai {
+font-size: 14px;
+line-height: 1.85;
+color: #aaa;
+background: #0f1020;
+border: 1px solid #1e2040;
+border-radius: 12px;
+padding: 16px;
+margin-bottom: 26px;
+}
+
+/* =====================
+LINE CTA
+===================== */
+.cta-block {
+background: #111116;
+border: 1px solid #2a2a35;
+border-radius: 16px;
+padding: 20px;
+margin-bottom: 14px;
+}
+
+.cta-pre {
+font-size: 11px;
+color: #7b5cf0;
+font-weight: bold;
+letter-spacing: 2px;
+text-align: center;
+margin-bottom: 6px;
+text-transform: uppercase;
+}
+
+.cta-headline {
+font-size: 15px;
+font-weight: bold;
+color: #f0f0f0;
+text-align: center;
+line-height: 1.65;
+margin-bottom: 16px;
+}
+
+.cta-headline span {
+background: linear-gradient(90deg, #e0427a, #f4a94f);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+
+.line-cta {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 10px;
+background: #06C755;
+border-radius: 14px;
+padding: 16px 20px;
+width: 100%;
+color: white;
+font-size: 15px;
+font-weight: bold;
+text-decoration: none;
+letter-spacing: 0.3px;
+transition: filter 0.2s, transform 0.15s;
+}
+.line-cta:hover  { filter: brightness(1.1); transform: translateY(-1px); }
+.line-cta:active { transform: scale(0.98); }
+
+.line-icon {
+width: 24px; height: 24px;
+background: white;
+border-radius: 5px;
+display: flex; align-items: center; justify-content: center;
+flex-shrink: 0;
+}
+.line-icon svg { width: 17px; height: 17px; }
+
+.cta-note {
+font-size: 11px;
+color: #444;
+text-align: center;
+margin-top: 10px;
+line-height: 1.6;
+}
+
+.btn-retry {
+width: 100%;
+background: none;
+border: 1.5px solid #2a2a38;
+border-radius: 12px;
+padding: 13px;
+font-size: 14px;
+color: #555;
+cursor: pointer;
+transition: border-color 0.2s, color 0.2s;
+}
+.btn-retry:hover { border-color: #555; color: #888; }
+</style>
+
+</head>
+<body>
+
+<!-- ▼ HERO：フルウィズ・コンテナ外 -->
+
+<div class="hero-wrap">
+  <img class="hero-bg" src="hero.png" alt="" onerror="this.style.display='none'">
+  <div class="hero-overlay"></div>
+  <img class="hero-illust" src="illust.png" alt="" onerror="this.style.display='none'">
+  <div class="hero-text">
+    <div class="hero-label">Your Type</div>
+    <div class="hero-h1">あなたは<span>どのタイプ</span>？<br>サロンオーナー・セラピスト<br>タイプ診断</div>
+    <div class="hero-sub">12の質問に答えるだけ。<br>あなたのビジネスタイプと、最適なAI活用法がわかります。</div>
+  </div>
+</div>
+
+<!-- ▼ 設問エリア：コンテナ内 -->
+
+<div class="container">
+
+  <div id="quiz-section">
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="prog-text">QUESTION 1 / 12</span>
+        <span id="prog-pct">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+```
+<div class="card">
+  <div class="q-number" id="q-num">Q01</div>
+  <div class="q-text" id="q-text"></div>
+  <div class="options" id="options"></div>
+</div>
+
+<div class="nav">
+  <button class="btn-back" id="btn-back" onclick="goBack()">←</button>
+  <button class="btn-next" id="btn-next" onclick="goNext()">次へ →</button>
+</div>
+```
+
+  </div>
+
+  <div id="result-section" style="display:none"></div>
+
+</div><!-- /.container -->
+
+<script>
+/* =====================
+   DATA
+===================== */
+const questions = [
+  { text: "サロンを開いた（または開きたい）一番の理由は？", opts: [
+    { text: "自分の技術を突き詰めたかったから", t: "A" },
+    { text: "お客様を癒したい、笑顔を見たいから", t: "B" },
+    { text: "独立して収入を増やしたかったから", t: "C" },
+    { text: "好きなことを仕事にしたかったから", t: "D" },
+  ]},
+  { text: "新しいメニューを作るとき、最初に考えるのは？", opts: [
+    { text: "どうすれば技術的に完璧にできるか", t: "A" },
+    { text: "お客様にどんな変化をもたらせるか", t: "B" },
+    { text: "どの価格帯・ターゲットなら売れるか", t: "C" },
+    { text: "自分がワクワクできるか、やりたいかどうか", t: "D" },
+  ]},
+  { text: "施術が終わった後、一番満足感を感じる瞬間は？", opts: [
+    { text: "「うまくいった」と自分の腕に手応えを感じたとき", t: "A" },
+    { text: "お客様の表情が明るくなったのを見たとき", t: "B" },
+    { text: "売上・予約数の数字が伸びているとき", t: "C" },
+    { text: "「これが私らしい仕事だ」と感じたとき", t: "D" },
+  ]},
+  { text: "集客で困ったとき、まず何をしますか？", opts: [
+    { text: "施術の質を上げることに集中する", t: "A" },
+    { text: "既存のお客様への連絡やフォローを強化する", t: "B" },
+    { text: "広告・SNS・仕組みを試行錯誤する", t: "C" },
+    { text: "自分の想いや世界観をSNSで発信する", t: "D" },
+  ]},
+  { text: "お客様から「もっと安くして」と言われたら？", opts: [
+    { text: "技術の価値を丁寧に説明して断る", t: "A" },
+    { text: "申し訳なくて、つい応じてしまう", t: "B" },
+    { text: "費用対効果を数字で説明して交渉する", t: "C" },
+    { text: "共感はするが、自分の世界観は曲げたくない", t: "D" },
+  ]},
+  { text: "セミナーや勉強会に行くとしたら、どんな内容？", opts: [
+    { text: "技術・手技の向上系（新しい施術法など）", t: "A" },
+    { text: "カウンセリングやコミュニケーション系", t: "B" },
+    { text: "マーケティング・経営・集客系", t: "C" },
+    { text: "ブランディングや自己表現系", t: "D" },
+  ]},
+  { text: "あなたが一番悩むのはどれですか？", opts: [
+    { text: "頑張っているのに、技術が認められない", t: "A" },
+    { text: "お客様の要望を断れず、疲れてしまう", t: "B" },
+    { text: "集客の仕組みがうまく機能しない", t: "C" },
+    { text: "発信は頑張っているのに、収益につながらない", t: "D" },
+  ]},
+  { text: "理想のお客様像は？", opts: [
+    { text: "技術の価値をきちんと理解してくれる人", t: "A" },
+    { text: "心から信頼して任せてくれる人", t: "B" },
+    { text: "コストパフォーマンスを正当に評価してくれる人", t: "C" },
+    { text: "自分の世界観や想いに共感してくれる人", t: "D" },
+  ]},
+  { text: "SNS発信について、正直なところ…", opts: [
+    { text: "技術を見せることに意義を感じるが、続けるのが難しい", t: "A" },
+    { text: "お客様の喜ぶ顔を届けたいが、うまく発信できない", t: "B" },
+    { text: "戦略的に使いたいが、コンテンツ作りが追いつかない", t: "C" },
+    { text: "自分らしい発信はできるが、マネタイズが弱い", t: "D" },
+  ]},
+  { text: "1年後の理想のサロンに最も近いのは？", opts: [
+    { text: "技術力で指名が絶えない、腕で勝負できるサロン", t: "A" },
+    { text: "常連さんに愛され、居心地最高と言われるサロン", t: "B" },
+    { text: "仕組みが回って安定的に売上が上がるサロン", t: "C" },
+    { text: "自分らしさが全面に出た、唯一無二のサロン", t: "D" },
+  ]},
+  { text: "AIツール（ChatGPTなど）に対して、今のイメージは？", opts: [
+    { text: "技術の代替にはならないので、あまり関心がない", t: "A" },
+    { text: "便利そうだけど、使いこなせる自信がない", t: "B" },
+    { text: "集客・業務効率化に使えそう、積極的に試したい", t: "C" },
+    { text: "発信・コンテンツ作りに使えそうで興味ある", t: "D" },
+  ]},
+  { text: "仕事を続けるモチベーションの根っこにあるのは？", opts: [
+    { text: "より高い技術を追求し続けること", t: "A" },
+    { text: "誰かの役に立ち、喜ばれること", t: "B" },
+    { text: "ビジネスとして成長・成功させること", t: "C" },
+    { text: "自分らしい生き方を体現し続けること", t: "D" },
+  ]},
+];
+
+const types = {
+  A: {
+    emoji: "🔨", img: "result_a.png",
+    name: "技術職人タイプ", tagline: "腕が全て。誠実に技を磨く職人気質",
+    desc: "施術の質と探求が人生の中心。「いい仕事をすれば伝わるはず」という信念を持ち、技術向上への投資は惜しみません。ただ、認知・集客・価格設定といった「見せ方の戦略」が弱点になりがちです。腕は本物なのに、埋もれてしまうリスクがあります。",
+    ai: "AIは「あなたの技術を言語化・発信するアシスタント」として使うのが最適です。施術のビフォーアフターや強みをAIに整理させ、Webやチラシの文章を自動生成。技術の説明文・Q&Aページ・指名を増やすためのプロフィール文など、「言葉で価値を伝える」部分をAIに任せましょう。",
+  },
+  B: {
+    emoji: "💛", img: "result_b.png",
+    name: "癒し提供者タイプ", tagline: "お客様の笑顔が全て。共感の達人",
+    desc: "お客様の変化や感謝が最大の原動力。共感力が高く、リピートを自然に生む温かさがあります。ただし「断れない・値上げできない・友達価格になりがち」という傾向があり、感情的に消耗して燃え尽きるリスクも。優しさを守るために、仕組みが必要です。",
+    ai: "AIは「あなたを守るバッファ」として使いましょう。値上げ告知文・ご要望をお断りする文・LINE返信テンプレートなど、「直接言いづらいこと」をAIに文章化させると感情消耗が激減します。カウンセリングシートや顧客管理の整理にも活用できます。",
+  },
+  C: {
+    emoji: "📊", img: "result_c.png",
+    name: "ビジネス先行タイプ", tagline: "数字と仕組みで動く、戦略家",
+    desc: "集客・売上・仕組み化への関心が高く、経営感覚があります。新しいマーケティング手法や広告も積極的に試せる行動力が強み。ただし、技術や顧客体験が薄れがちになり、「口コミが育たない・リピートが弱い」という課題が出やすいタイプです。",
+    ai: "AIは「分析・自動化・スピードアップ」のフル活用が向いています。競合リサーチ、SNS投稿の量産、広告文のABテスト案作成、売上データの整理・分析補助など。すでに行動力がある分、AIで処理速度を上げると一気に成果につながります。",
+  },
+  D: {
+    emoji: "🌸", img: "result_d.png",
+    name: "自己実現タイプ", tagline: "自分らしさが最大の武器",
+    desc: "「好きなことで生きる」「自分らしい働き方」が動機の中心。発信力があり、世界観づくりは得意です。ただし、ビジネスの持続性設計が弱くなりがちで、「コンテンツは作るのに収益につながらない」というギャップが生じやすいタイプです。",
+    ai: "AIは「世界観を壊さずに収益化する橋渡し役」として使いましょう。あなたの言葉・想いをインプットして、販売ページ・メニュー説明・価格設定の根拠をAIに整理させる。発信→集客→収益の導線をAIで設計することで、世界観を守りながら売上を立てられます。",
+  },
+};
+
+/* =====================
+   STATE
+===================== */
+let current = 0, answers = [], selected = null;
+
+function scores() {
+  const s = { A:0, B:0, C:0, D:0 };
+  answers.forEach(a => s[a.t]++);
+  return s;
+}
+function topType() {
+  return Object.entries(scores()).sort((a,b) => b[1]-a[1])[0][0];
+}
+
+/* =====================
+   RENDER QUESTION
+===================== */
+function render() {
+  const q = questions[current];
+  document.getElementById('q-num').textContent  = `Q${String(current+1).padStart(2,'0')}`;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('prog-text').textContent = `QUESTION ${current+1} / ${questions.length}`;
+  const pct = Math.round((current / questions.length) * 100);
+  document.getElementById('prog-pct').textContent  = pct + '%';
+  document.getElementById('prog-fill').style.width = pct + '%';
+
+  const opts = document.getElementById('options');
+  opts.innerHTML = '';
+  selected = answers[current] ? answers[current].t : null;
+
+  q.opts.forEach((o, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn' + (selected === o.t ? ' selected' : '');
+    btn.textContent = o.text;
+    btn.onclick = () => pick(o.t, i);
+    opts.appendChild(btn);
+  });
+
+  document.getElementById('btn-back').style.visibility = current === 0 ? 'hidden' : 'visible';
+  syncNext();
+}
+
+function pick(t, idx) {
+  selected = t;
+  answers[current] = { t };
+  document.querySelectorAll('.option-btn').forEach((b,i) => b.classList.toggle('selected', i === idx));
+  syncNext();
+}
+
+function syncNext() {
+  const btn = document.getElementById('btn-next');
+  btn.classList.toggle('active', !!selected);
+  btn.textContent = current === questions.length - 1 ? '結果を見る ✦' : '次へ →';
+}
+
+function goNext() {
+  if (!selected) return;
+  if (current < questions.length - 1) { current++; selected = null; render(); }
+  else showResult();
+}
+
+function goBack() {
+  if (current > 0) { current--; selected = answers[current]?.t ?? null; render(); }
+}
+
+/* =====================
+   RENDER RESULT
+===================== */
+function showResult() {
+  const t = types[topType()];
+  document.getElementById('quiz-section').style.display = 'none';
+  const rs = document.getElementById('result-section');
+  rs.style.display = 'block';
+  rs.innerHTML = `
+    <div class="result-card">
+      <div class="result-img-wrap">
+        <img src="${t.img}" alt="${t.name}"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div class="result-img-placeholder" style="display:none">
+          <span class="emoji">${t.emoji}</span>
+          <span>${t.img}</span>
+        </div>
+        <div class="result-img-overlay"></div>
+      </div>
+      <div class="result-body">
+        <div class="result-type-label">Your Type</div>
+        <div class="result-name">${t.name}</div>
+        <div class="result-tagline">${t.tagline}</div>
+        <div class="result-desc">${t.desc}</div>
+        <div class="result-section-title">— AI Strategy for You</div>
+        <div class="result-ai">${t.ai}</div>
+      </div>
+    </div>
+
+    <div class="cta-block">
+      <div class="cta-pre">✦ Limited Gift ✦</div>
+      <div class="cta-headline">
+        診断結果に基づいた、<br><span>あなた専用の戦略ガイド</span>をプレゼント中！
+      </div>
+      <a class="line-cta" href="https://lin.ee/z3hAA7i" target="_blank">
+        <span class="line-icon">
+          <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" rx="10" fill="#06C755"/>
+            <path d="M24 8C15.163 8 8 14.477 8 22.4c0 5.197 3.19 9.75 8 12.26V38l5.155-2.844C22.054 35.696 23.014 35.8 24 35.8c8.837 0 16-6.477 16-14.4S32.837 8 24 8z" fill="white"/>
+          </svg>
+        </span>
+        【無料】AI活用スライドをLINEで受け取る →
+      </a>
+      <div class="cta-note">登録後すぐに届きます・いつでも解除できます</div>
+    </div>
+
+    <button class="btn-retry" onclick="retry()">↺ もう一度診断する</button>
+  `;
+}
+
+function retry() {
+  current = 0; answers = []; selected = null;
+  document.getElementById('result-section').style.display = 'none';
+  document.getElementById('quiz-section').style.display = 'block';
+  render();
+}
+
+/* =====================
+   INIT
+===================== */
+render();
+</script>
+
+</body>
+</html>
